@@ -1,9 +1,7 @@
 import { RNKeycloak } from '@react-keycloak/native';
 import { AxiosStatic } from 'axios';
 import { jwtDecode } from 'jwt-decode'; // For decoding JWT token
-import { Linking } from 'react-native';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
-import { useNavigation } from '@react-navigation/native';
 
 export interface Authenticator {
   authenticate(tokenHolder: TokenHolder): Promise<boolean>;

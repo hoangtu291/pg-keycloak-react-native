@@ -19,7 +19,7 @@ export const KeycloakProvider: React.FC<KeycloakProviderProps> = ({ children }) 
         setIsAuthenticated(false);
       }
     });
-  }, [isAuthenticated]);
+  }, []);
 
   if (!isAuthenticated) {
     return (
