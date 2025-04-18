@@ -28,6 +28,7 @@ import {
 import { KeycloakProvider } from './src/KeycloakProvider';
 import { AuthenticatorService } from './src/authenticatorService';
 import { useNavigation } from '@react-navigation/native';
+import { UserInformation } from './src/authenticator';
 
 // Đăng ký ứng dụng chính
 AppRegistry.registerComponent('App', () => App);
@@ -61,26 +62,19 @@ function Section({ children, title }: SectionProps): React.JSX.Element {
   );
 }
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  const [key, setKey] = useState(0);
-
-  // Hàm gọi khi muốn reload lại component
-  const reloadComponent = () => {
-    setKey(prevKey => prevKey + 1);  // Thay đổi key để trigger re-render
-  };
-  useEffect(() => {console.log('key', key);
-  }, [key]);
+function Info({ reload }: { reload: () => void }): React.JSX.Element {
+  const [info, setInfo] = useState<UserInformation | undefined>();
+  const authenticator = AuthenticatorService.getInstance()?.getAuthenticator();
+  useEffect(() => {
+    setInfo(authenticator?.getUserInformation());
+  }, [authenticator]);
 
   const handleLogout = async () => {
     try {
-      const authenticator = AuthenticatorService.getInstance().getAuthenticator();
 
-      // Kiểm tra nếu authenticator không phải là null hoặc undefined
       if (authenticator) {
-        // Gọi phương thức logout và truyền redirectUri hợp lệ
-        await authenticator.logout('http://103.221.220.183:8880');
-        reloadComponent();
+        await authenticator.logout('test-auth://callback');
+        reload();
       } else {
         console.error('Authenticator không có sẵn');
       }
@@ -88,6 +82,33 @@ function App(): React.JSX.Element {
       console.error('Lỗi khi logout:', error);
     }
   };
+  return (
+    <View style={styles.sectionContainer}>
+      <Section title="Step One">
+        Hello <Text style={styles.highlight}>{info?.username}</Text> {'\n'}
+        <Button title="Logout" onPress={handleLogout} />
+      </Section>
+      <Section title="Information">
+        First name: <Text style={styles.highlight}>{info?.firstName}</Text> {'\n'}
+        Last name: <Text style={styles.highlight}>{info?.lastName}</Text> {'\n'}
+        Roles: <Text style={styles.highlight}>{info?.roles.join(', ')}</Text> {'\n'}
+        Email: <Text style={styles.highlight}>{info?.email}</Text> {'\n'}
+      </Section>
+    </View>
+  );
+}
+
+function App(): React.JSX.Element {
+  const isDarkMode = useColorScheme() === 'dark';
+  const [key, setKey] = useState(0);
+
+  const reloadComponent = () => {
+    setKey(prevKey => prevKey + 1);
+  };
+  useEffect(() => {
+    console.log('key', key);
+  }, [key]);
+
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
@@ -104,7 +125,7 @@ function App(): React.JSX.Element {
   const safePadding = '5%';
   return (
     <KeycloakProvider
-    key={key}
+      key={key}
     >
       <View style={backgroundStyle}>
         <StatusBar
@@ -122,20 +143,7 @@ function App(): React.JSX.Element {
               paddingHorizontal: safePadding,
               paddingBottom: safePadding,
             }}>
-            <Section title="Step One">
-              <Button title="Logout" onPress={handleLogout} />
-              {'\n'}Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-              screen and then come back to see your edits.
-            </Section>
-            <Section title="See Your Changes">
-              <ReloadInstructions />
-            </Section>
-            <Section title="Debug">
-              <DebugInstructions />
-            </Section>
-            <Section title="Learn More">
-              Read the docs to discover what to do next:
-            </Section>
+            <Info reload={reloadComponent} />
             <LearnMoreLinks />
           </View>
         </ScrollView>

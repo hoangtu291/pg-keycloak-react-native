@@ -14,12 +14,16 @@ export const KeycloakProvider: React.FC<KeycloakProviderProps> = ({ children }) 
     // Giả sử authMiddleware là một hàm bất đồng bộ kiểm tra tình trạng xác thực
     authMiddleware().then((res) => {
       if (res.getToken()) {
+        console.log(res);
+
         setIsAuthenticated(true);
       } else {
         setIsAuthenticated(false);
       }
+
     });
   }, []);
+  console.log(isAuthenticated);
 
   if (!isAuthenticated) {
     return (
